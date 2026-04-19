@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui;background:#f7f7f7;color:#1a1a1a;min-height:600px;-webkit-font-smoothing:antialiased}
+h2.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+:root{
+  --navy:#2d1a6e;--purple:#724BDE;--purple-light:rgba(114,75,222,0.08);--purple-border:rgba(114,75,222,0.3);
+  --gray-bg:#f7f7f7;--gray-border:#e2e2e2;--text-primary:#1a1a1a;--text-secondary:#555;--text-muted:#888;
+  --white:#fff;--green:#16a34a;--green-light:rgba(22,163,74,0.07);--amber:#b45309;--amber-light:rgba(245,158,11,0.08);--red:#dc2626
+}
+
+/* WIZARD */
+.wizard{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:600px;padding:32px 24px;background:var(--gray-bg)}
+.wiz-card{background:var(--white);border:1px solid var(--gray-border);border-radius:4px;padding:36px 40px;width:100%;max-width:600px;box-shadow:0 2px 12px rgba(0,0,0,0.06)}
+.wiz-brand{display:flex;align-items:center;gap:10px;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--gray-border)}
+.wiz-brand-mark{width:32px;height:32px;background:var(--navy);border-radius:3px;display:flex;align-items:center;justify-content:center}
+.wiz-brand-name{font-size:13px;font-weight:600;color:var(--navy)}.wiz-brand-sub{font-size:11px;color:var(--text-muted);margin-top:1px}
+.step-dots{display:flex;gap:5px;margin-bottom:24px}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--gray-border);transition:background .2s}
+.dot.active{background:var(--purple)}.dot.done{background:var(--green)}
+.step-label{font-size:11px;color:var(--text-muted);font-weight:500;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.wiz-title{font-size:20px;font-weight:600;color:var(--navy);margin-bottom:6px;line-height:1.3}
+.wiz-sub{font-size:13px;color:var(--text-secondary);margin-bottom:24px;line-height:1.65}
+.wiz-actions{display:flex;justify-content:space-between;align-items:center;margin-top:28px;padding-top:20px;border-top:1px solid var(--gray-border)}
+.btn-back{padding:9px 18px;border:1px solid var(--gray-border);border-radius:3px;background:transparent;cursor:pointer;font-size:13px;font-weight:500;color:var(--text-secondary);font-family:inherit;transition:all .15s}
+.btn-back:hover{background:var(--gray-bg)}
+.btn-next{padding:10px 24px;border:none;border-radius:3px;background:var(--navy);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s}
+.btn-next:hover{background:#1e1050}.btn-next:disabled{background:#bbb;cursor:not-allowed}
+.choice-grid{display:grid;gap:10px}.c2{grid-template-columns:1fr 1fr}
+.choice-btn{border:1.5px solid var(--gray-border);border-radius:4px;padding:16px;background:var(--white);cursor:pointer;text-align:left;transition:all .15s;width:100%;font-family:inherit}
+.choice-btn:hover{border-color:var(--purple);background:var(--purple-light)}
+.choice-btn.sel{border-color:var(--purple);background:var(--purple-light);box-shadow:inset 0 0 0 1px var(--purple)}
+.cb-title{font-size:13px;font-weight:600;color:var(--navy);margin-bottom:4px}
+.cb-desc{font-size:12px;color:var(--text-secondary);line-height:1.55}
+.cb-ico{margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.sel-check{width:18px;height:18px;border-radius:50%;background:var(--purple);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-left:auto;opacity:0;transition:opacity .15s}
+.choice-btn.sel .sel-check{opacity:1}
+.layout-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.layout-btn{border:1.5px solid var(--gray-border);border-radius:4px;padding:14px;background:var(--white);cursor:pointer;text-align:left;transition:all .15s;width:100%;font-family:inherit}
+.layout-btn:hover{border-color:var(--purple);background:var(--purple-light)}
+.layout-btn.sel{border-color:var(--purple);background:var(--purple-light);box-shadow:inset 0 0 0 1px var(--purple)}
+.layout-preview{width:100%;height:68px;margin-bottom:10px;border-radius:3px;overflow:hidden;background:var(--gray-bg)}
+.layout-name{font-size:13px;font-weight:600;color:var(--navy);margin-bottom:2px}
+.layout-desc{font-size:11px;color:var(--text-secondary);line-height:1.45}
+.field-grid{display:grid;gap:14px}.fg2{grid-template-columns:1fr 1fr}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;letter-spacing:.01em;text-transform:uppercase}
+.field input,.field select{width:100%;padding:10px 12px;border:1px solid var(--gray-border);border-radius:3px;font-size:16px;font-weight:500;background:var(--white);color:var(--text-primary);font-family:inherit;transition:border-color .15s}
+.field input:focus,.field select:focus{outline:none;border-color:var(--purple);box-shadow:0 0 0 3px var(--purple-light)}
+.field .unit{font-size:11px;color:var(--text-muted);margin-top:4px}
+.rec-box{border-radius:4px;padding:14px 16px;margin:14px 0;border:1px solid}
+.rec-box.good{background:var(--green-light);border-color:rgba(22,163,74,0.25)}
+.rec-box.warn{background:var(--amber-light);border-color:rgba(245,158,11,0.25)}
+.rec-box.empty{background:var(--gray-bg);border-color:var(--gray-border)}
+.rec-title{font-size:14px;font-weight:600;color:var(--navy);margin-bottom:4px}
+.rec-desc{font-size:12px;color:var(--text-secondary);line-height:1.55}
+.rec-override{margin-top:10px;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-secondary)}
+.rec-override select{padding:5px 8px;border:1px solid var(--gray-border);border-radius:3px;font-size:12px;background:var(--white);color:var(--text-primary);font-family:inherit}
+.rec-override select:focus{outline:none;border-color:var(--purple)}
+.field-hint{font-size:11px;color:var(--text-muted);margin-top:8px;line-height:1.6;font-style:italic}
+.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px}
+.sum-chip{background:var(--gray-bg);border:1px solid var(--gray-border);border-radius:4px;padding:10px 14px}
+.sum-label{font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
+.sum-val{font-size:13px;font-weight:600;color:var(--navy)}
+.tip-box{background:var(--purple-light);border:1px solid var(--purple-border);border-radius:4px;padding:14px 16px;font-size:12px;color:var(--text-secondary);line-height:1.75}
+.tip-box strong{color:var(--navy)}
+.warn-note{font-size:11px;color:var(--amber);background:var(--amber-light);border:1px solid rgba(245,158,11,0.2);border-radius:3px;padding:8px 12px;margin-top:12px;line-height:1.55}
+.fastpipe-note{background:var(--gray-bg);border:1px solid var(--gray-border);border-radius:4px;padding:14px 16px;font-size:13px;color:var(--text-secondary);line-height:1.6}
+
+/* DESIGNER */
+.designer{display:none;grid-template-columns:200px 1fr 272px;height:100vh;min-height:600px}
+.designer.active{display:grid}
+.sidebar{background:var(--navy);display:flex;flex-direction:column;overflow:hidden}
+.sb-head{padding:14px 16px;border-bottom:1px solid rgba(255,255,255,0.1)}
+.sb-logo{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.sb-logo-mark{width:24px;height:24px;background:var(--purple);border-radius:2px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb-logo-text{font-size:12px;font-weight:600;color:#fff}
+.sb-config-line{font-size:10px;color:rgba(255,255,255,0.5);line-height:1.5}
+.sb-scroll{flex:1;overflow-y:auto;padding:8px 10px}
+.sb-scroll::-webkit-scrollbar{width:4px}.sb-scroll::-webkit-scrollbar-track{background:transparent}.sb-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.15);border-radius:2px}
+.sb-sec{font-size:9px;font-weight:600;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:.08em;padding:12px 4px 5px}
+.tool-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:3px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.05);cursor:grab;margin-bottom:5px;user-select:none;transition:all .15s}
+.tool-item:hover{background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.18)}
+.tool-name{font-size:11px;font-weight:500;color:rgba(255,255,255,0.9);line-height:1.3}
+.tool-price{font-size:10px;color:rgba(255,255,255,0.45);margin-top:1px}
+.sb-foot{padding:12px 14px;border-top:1px solid rgba(255,255,255,0.1)}
+.restart-btn{width:100%;padding:8px;border:1px solid rgba(255,255,255,0.2);border-radius:3px;background:transparent;cursor:pointer;font-size:11px;font-weight:500;color:rgba(255,255,255,0.6);font-family:inherit;transition:all .15s}
+.restart-btn:hover{background:rgba(255,255,255,0.08);color:#fff}
+.canvas-area{display:flex;flex-direction:column;overflow:hidden}
+.view-tabs{display:flex;border-bottom:1px solid var(--gray-border);background:var(--white)}
+.view-tab{flex:1;padding:10px 12px;font-size:12px;font-weight:600;border:none;background:transparent;cursor:pointer;color:var(--text-muted);border-bottom:2px solid transparent;transition:all .15s;font-family:inherit;letter-spacing:.01em}
+.view-tab.active{color:var(--navy);border-bottom-color:var(--navy)}
+.view-tab:hover:not(.active){color:var(--text-secondary)}
+.canvas-wrap{flex:1;background:#e8e8e6;position:relative;overflow:hidden}
+#canvas{position:relative;width:100%;height:100%}
+.canvas-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(0,0,0,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,0.05) 1px,transparent 1px);background-size:20px 20px}
+.room-outline{position:absolute;border:2px dashed rgba(45,26,110,0.25);border-radius:2px;pointer-events:none;background:rgba(45,26,110,0.03)}
+.room-label{position:absolute;font-size:10px;color:rgba(45,26,110,0.4);font-weight:600;pointer-events:none}
+svg#pipe-layer{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.canvas-toolbar{position:absolute;top:12px;left:50%;transform:translateX(-50%);display:flex;gap:2px;background:var(--white);border:1px solid var(--gray-border);border-radius:4px;padding:4px;box-shadow:0 2px 8px rgba(0,0,0,0.1);z-index:20}
+.tb-btn{padding:6px 12px;font-size:11px;font-weight:600;border:none;border-radius:3px;cursor:pointer;background:transparent;color:var(--text-secondary);white-space:nowrap;font-family:inherit;letter-spacing:.01em;transition:all .15s}
+.tb-btn.active{background:var(--navy);color:#fff}
+.tb-btn:hover:not(.active){background:var(--gray-bg);color:var(--navy)}
+.tb-sep{width:1px;background:var(--gray-border);margin:4px 2px}
+.tb-danger{color:var(--red)!important}.tb-danger:hover{background:rgba(220,38,38,0.06)!important;color:var(--red)!important}
+.wall-view{flex:1;background:#e8e8e6;position:relative;overflow:hidden;display:none}
+.wall-view.show{display:block}
+.ceil-ctrl{display:none;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--gray-border);background:var(--white)}
+.ceil-ctrl.show{display:flex}
+.ceil-ctrl label{font-size:11px;font-weight:600;color:var(--text-secondary);white-space:nowrap;text-transform:uppercase;letter-spacing:.04em}
+.ceil-ctrl input[type=range]{flex:1;accent-color:var(--navy)}
+.ceil-ctrl span{font-size:12px;font-weight:600;color:var(--navy);min-width:44px;text-align:right}
+.placed-item{position:absolute;cursor:move;user-select:none;z-index:5}
+.item-box{background:var(--white);border:1.5px solid #ccc;border-radius:4px;padding:6px 8px;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:70px;box-shadow:0 1px 4px rgba(0,0,0,0.08)}
+.placed-item.selected .item-box{border-color:var(--purple);box-shadow:0 0 0 2px var(--purple-light),0 1px 4px rgba(0,0,0,0.08)}
+.compressor-item .item-box{border-color:var(--navy);border-width:2px;background:rgba(45,26,110,0.04)}
+.outlet-item .item-box{border-color:var(--purple);background:var(--purple-light)}
+.item-label{font-size:10px;font-weight:600;text-align:center;line-height:1.3;color:var(--text-primary)}
+.item-sku{font-size:9px;color:var(--text-muted);font-weight:500}
+.del-btn{position:absolute;top:-7px;right:-7px;width:17px;height:17px;border-radius:50%;background:var(--red);color:#fff;border:none;cursor:pointer;font-size:10px;display:none;align-items:center;justify-content:center;z-index:10;font-family:inherit}
+.placed-item:hover .del-btn,.placed-item.selected .del-btn{display:flex}
+.pipe-port{width:10px;height:10px;border-radius:50%;background:var(--purple);position:absolute;cursor:crosshair;border:2px solid #fff;box-shadow:0 0 0 1px var(--purple);z-index:10;opacity:0;transition:opacity .12s}
+.placed-item:hover .pipe-port,.pipe-mode .pipe-port{opacity:1}
+.pipe-port.pt{top:-5px;left:50%;transform:translateX(-50%)}
+.pipe-port.pb{bottom:-5px;left:50%;transform:translateX(-50%)}
+.pipe-port.pl{left:-5px;top:50%;transform:translateY(-50%)}
+.pipe-port.pr{right:-5px;top:50%;transform:translateY(-50%)}
+path.pipe{stroke-width:3;fill:none;stroke-linecap:round}
+path.pipe.maxline{stroke:var(--purple)}
+path.pipe.fastpipe{stroke:var(--navy)}
+path.pipe-preview{stroke:#aaa;stroke-width:2;stroke-dasharray:5 4;fill:none}
+.outlet-flag{position:absolute;bottom:-15px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--purple);font-weight:600;white-space:nowrap}
+.panel{background:var(--white);border-left:1px solid var(--gray-border);display:flex;flex-direction:column;overflow:hidden}
+.panel-top{flex:1;overflow-y:auto;padding:16px}
+.panel-bot{padding:14px 16px;border-top:1px solid var(--gray-border)}
+.p-title{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
+.bom-item{display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid #f0f0f0}
+.bom-item.tubing-row{background:var(--purple-light);margin:0 -4px;padding:8px 4px;border-radius:3px;border-bottom:1px solid var(--purple-border)}
+.bom-qty{font-size:12px;font-weight:700;min-width:24px;color:var(--text-secondary);padding-top:1px}
+.bom-name{font-size:11px;flex:1;min-width:0;line-height:1.5;color:var(--text-primary)}
+.bom-name a{color:var(--purple);text-decoration:none;font-weight:600}
+.bom-name a:hover{text-decoration:underline}
+.bom-price{font-size:12px;font-weight:700;white-space:nowrap;color:var(--navy)}
+.bom-section-label{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;padding:10px 0 4px;border-top:1px solid #f0f0f0;margin-top:2px}
+.bom-total{display:flex;justify-content:space-between;align-items:baseline;padding:12px 0 2px;border-top:2px solid var(--navy);margin-top:6px}
+.bom-total-label{font-size:12px;font-weight:700;color:var(--navy)}
+.bom-total-val{font-size:18px;font-weight:700;color:var(--navy)}
+.bom-empty{font-size:12px;color:var(--text-muted);text-align:center;padding:24px 0;line-height:1.8}
+.badge{display:inline-flex;align-items:center;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.04em;margin-right:2px;text-transform:uppercase}
+.badge.h{background:var(--purple-light);color:var(--purple)}
+.badge.v{background:rgba(45,26,110,0.08);color:var(--navy)}
+.cta-btn{display:block;width:100%;padding:11px;border-radius:3px;background:var(--navy);color:#fff;font-weight:700;font-size:13px;border:none;cursor:pointer;text-align:center;margin-top:12px;font-family:inherit;letter-spacing:.02em;transition:background .15s}
+.cta-btn:hover{background:#1e1050}
+.shop-links{display:flex;flex-direction:column;gap:6px;margin-bottom:4px}
+.shop-link{display:block;padding:8px 12px;border-radius:3px;background:var(--gray-bg);border:1px solid var(--gray-border);font-size:11px;font-weight:600;color:var(--text-secondary);text-align:center;text-decoration:none;transition:all .15s;font-family:inherit}
+.shop-link:hover{color:var(--navy);border-color:var(--navy);background:#f0eeff}
+</style>
+</head>
+<body>
+<h2 class="sr-only">RapidAir Shop Air Line Designer — plan your compressed air system and get an instant parts list</h2>
+
+<!-- WIZARD -->
+<div class="wizard" id="wizard">
+  <div class="wiz-card">
+    <div class="wiz-brand">
+      <div class="wiz-brand-mark">
+        <svg viewBox="0 0 18 18" fill="none" width="18" height="18"><rect x="2" y="5" width="9" height="7" rx="2" stroke="#fff" stroke-width="1.5"/><circle cx="14" cy="9" r="2.5" stroke="#fff" stroke-width="1.5"/><path d="M11 9h-2" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <div><div class="wiz-brand-name">Compressor Source</div><div class="wiz-brand-sub">RapidAir System Designer</div></div>
+    </div>
+    <div class="step-dots" id="step-dots"></div>
+    <div id="wiz-body"></div>
+  </div>
+</div>
+
+<!-- DESIGNER -->
+<div class="designer" id="designer">
+  <div class="sidebar">
+    <div class="sb-head">
+      <div class="sb-logo">
+        <div class="sb-logo-mark"><svg viewBox="0 0 18 18" fill="none" width="14" height="14"><rect x="2" y="5" width="9" height="7" rx="2" stroke="#fff" stroke-width="1.5"/><circle cx="14" cy="9" r="2.5" stroke="#fff" stroke-width="1.5"/><path d="M11 9h-2" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+        <div class="sb-logo-text">RapidAir Designer</div>
+      </div>
+      <div class="sb-config-line" id="sb-config">Loading...</div>
+    </div>
+    <div class="sb-scroll" id="sb-scroll"></div>
+    <div class="sb-foot"><button class="restart-btn" onclick="restartWizard()">&#8592; Change Settings</button></div>
+  </div>
+  <div class="canvas-area">
+    <div class="view-tabs">
+      <button class="view-tab active" id="tab-floor" onclick="switchView('floor')">Floor Plan</button>
+      <button class="view-tab" id="tab-wall" onclick="switchView('wall')">Wall &amp; Drop View</button>
+    </div>
+    <div class="ceil-ctrl" id="ceil-ctrl">
+      <label>Outlet height from floor</label>
+      <input type="range" min="1" max="12" value="4" step="0.5" id="ceil-slider" oninput="updateOutletHeight(this.value)">
+      <span id="ceil-val">4 ft</span>
+    </div>
+    <div class="canvas-wrap" id="floor-wrap">
+      <div id="canvas">
+        <div class="canvas-grid"></div>
+        <div class="room-outline" id="room-outline"></div>
+        <div class="room-label" id="rl-w"></div>
+        <div class="room-label" id="rl-d"></div>
+        <svg id="pipe-layer"></svg>
+      </div>
+      <div class="canvas-toolbar">
+        <button class="tb-btn active" id="btn-select" onclick="setMode('select',this)">&#9654; Select</button>
+        <div class="tb-sep"></div>
+        <button class="tb-btn" id="btn-pipe" onclick="setMode('pipe',this)">&#9135; Draw Line</button>
+        <div class="tb-sep"></div>
+        <button class="tb-btn tb-danger" onclick="clearCanvas()">&#10005; Clear All</button>
+      </div>
+    </div>
+    <div class="wall-view" id="wall-wrap">
+      <svg id="wall-svg" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible"></svg>
+      <div id="wall-labels"></div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-top">
+      <div class="p-title">Parts List</div>
+      <div id="bom-list"><p class="bom-empty">Drag components onto the canvas<br>to build your parts list</p></div>
+    </div>
+    <div class="panel-bot">
+      <div class="shop-links" id="shop-links"></div>
+      <button class="cta-btn" onclick="sendToBOM()">Get Help With My List ↗</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let C={system:null,combination:false,diameter:null,diamOverride:false,useElbows:true,roomW:null,roomD:null,ceilH:10,outletH:4,compHP:null,maxDist:null,layout:null};
+
+function calcPipeSize(hp,dist){
+  if(!hp||!dist||hp<=0||dist<=0) return null;
+  return (hp<=3&&dist<=50)?'half':'threequarter';
+}
+function diamLabel(d){return d==='threequarter'?'3/4"':'1/2"';}
+
+// ── CATALOG ───────────────────────────────────────────────────────────────────
+const CAT={
+  maxline:{
+    threequarter:{
+      tubes:[
+        {id:'M6030',name:'3/4" MaxLine Tubing — 50ft Roll',sku:'M6030',price:99.95,icon:'tube',url:'https://compressor-source.com/collections/rapidair/products/m6030-rapidair-maxline-3-4-compressed-air-tubing-50-ft-roll',ft:50},
+        {id:'M7500',name:'3/4" MaxLine Shop Kit 100ft+',sku:'M7500',price:237.74,icon:'kit',url:'https://compressor-source.com/collections/rapidair/products/m7500-rapidair-maxline-3-4-compressed-air-tubing-commercial-shop-piping-kit',ft:100},
+      ],
+      fittings:[
+        {id:'M8067',name:'3/4" 90° Elbow Union',sku:'M8067',price:23.95,icon:'elbow',url:'https://compressor-source.com/collections/rapidair/products/rapidair-maxline-3-4-elbow-90-union-m8067'},
+        {id:'M8011',name:'3/4" Tee Union',sku:'M8011',price:26.99,icon:'tee',url:'https://compressor-source.com/collections/rapidair/products/rapidair-maxline-3-4-tee-union-m8011'},
+        {id:'M8078',name:'3/4"×1/2" Drop Tee',sku:'M8078',price:26.95,icon:'tee',url:'https://compressor-source.com/collections/rapidair/products/rapidair-maxline-3-4-x-1-2-female-drop-tee-union-m8078'},
+        {id:'M8003',name:'3/4" NPT Adapter',sku:'M8003',price:14.95,icon:'adapter',url:'https://compressor-source.com/collections/rapidair/products/rapidair-maxline-3-4-npt-straight-tubing-adapter-m8003'},
+        {id:'M8022',name:'3/4" Straight Union',sku:'M8022',price:18.95,icon:'union',url:'https://compressor-source.com/collections/rapidair/products/rapidair-maxline-3-4-straight-union-m8022'},
+        {id:'M8039',name:'3/4" Ball Valve',sku:'M8039',price:36.95,icon:'valve',url:'https://compressor-source.com/collections/rapidair/products/rapidair-maxline-3-4-in-line-ball-valve-m8039'},
+        {id:'M8027',name:'3/4" End Cap',sku:'M8027',price:14.99,icon:'cap',url:'https://compressor-source.com/collections/rapidair/products/rapidair-maxline-3-4-tubing-end-cap-fitting-plug-m8027'},
+        {id:'M8086',name:'3/4"×1/2" 90° Elbow NPT',sku:'M8086',price:19.95,icon:'elbow',url:'https://compressor-source.com/collections/rapidair/products/maxline-90-degree-elbow-fitting-3-4-tubing-x-1-2-male-npt-compressed-air-piping-m8086'},
+      ],
+      accessories:[
+        {id:'M7510',name:'Outlet Kit w/ Adapter',sku:'M7510',price:46.99,icon:'outlet',url:'https://compressor-source.com/collections/rapidair/products/rapidair-maxline-compressed-air-piping-system-outlet-kit-m7510-w-tubing-adaptor',isOutlet:true},
+        {id:'M8201',name:'Dual 1/2" Drop Port',sku:'M8201',price:74.95,icon:'outlet',url:'https://compressor-source.com/collections/rapidair/products/rapidair-maxline-3-4-inlet-dual-1-2-outlet-air-drop-port-m8201',isOutlet:true},
+        {id:'M8065',name:'3/4" Wall Clips 10pk',sku:'M8065',price:16.99,icon:'clip',url:'https://compressor-source.com/collections/rapidair/products/rapidair-maxline-3-4-compressed-air-tubing-wall-mount-clips-10pc-m8065'},
+        {id:'F0215',name:'3/4" Jumper Hose 3ft',sku:'F0215',price:54.95,icon:'hose',url:'https://compressor-source.com/collections/rapidair/products/rapidair-maxline-3-4-female-npt-x-3-4-male-npt-3-ft-jumper-hose-f0215'},
+        {id:'K7241',name:'1/2" Safety Coupler',sku:'K7241',price:11.95,icon:'coupler',url:'https://compressor-source.com/collections/rapidair/products/industrial-style-safety-air-plug-coupler-1-4-body-1-2-mnpt-push-button-release'},
+      ]
+    },
+    half:{
+      tubes:[{id:'M3800',name:'1/2" MaxLine Shop Kit 100ft+',sku:'M3800',price:224.25,icon:'kit',url:'https://compressor-source.com/collections/rapidair/products/m3800-rapidair-maxline-1-2-compressed-air-tubing-commercial-shop-piping-kit',ft:100}],
+      fittings:[
+        {id:'M8010',name:'1/2" Tee Union',sku:'M8010',price:12.95,icon:'tee',url:'https://compressor-source.com/collections/rapidair/products/rapidair-maxline-1-2-tee-union-m8010'},
+        {id:'M8005',name:'1/2" NPT Adapter',sku:'M8005',price:16.95,icon:'adapter',url:'https://compressor-source.com/collections/rapidair/products/rapidair-maxline-1-2-npt-straight-tubing-adapter-m8005'},
+      ],
+      accessories:[
+        {id:'M7510H',name:'Outlet Kit w/ Adapter',sku:'M7510',price:46.99,icon:'outlet',url:'https://compressor-source.com/collections/rapidair/products/rapidair-maxline-compressed-air-piping-system-outlet-kit-m7510-w-tubing-adaptor',isOutlet:true},
+        {id:'M8064',name:'1/2" Wall Clips 10pk',sku:'M8064',price:11.95,icon:'clip',url:'https://compressor-source.com/collections/rapidair/products/rapidair-maxline-1-2-compressed-air-tubing-wall-mount-clips-10pc-m8064'},
+        {id:'K7241H',name:'1/2" Safety Coupler',sku:'K7241',price:11.95,icon:'coupler',url:'https://compressor-source.com/collections/rapidair/products/industrial-style-safety-air-plug-coupler-1-4-body-1-2-mnpt-push-button-release'},
+      ]
+    }
+  },
+  fastpipe:{
+    threequarter:{
+      tubes:[{id:'FP-T34',name:'3/4" FastPipe Tubing',sku:'See site',price:0,icon:'tube',url:'https://compressor-source.com/collections/rapidair-fastpipe-system',ft:10}],
+      fittings:[{id:'F1005',name:'3/4" Tee Fitting',sku:'F1005',price:18.95,icon:'tee',url:'https://compressor-source.com/collections/rapidair/products/f1005-fastpipe-3-4-tee-fitting'}],
+      accessories:[{id:'FP-OUT',name:'FastPipe Outlet',sku:'See site',price:0,icon:'outlet',url:'https://compressor-source.com/collections/rapidair-fastpipe-system',isOutlet:true},{id:'FP-MORE',name:'More FastPipe Parts →',sku:'',price:0,icon:'link',url:'https://compressor-source.com/collections/rapidair-fastpipe-system',link:true}]
+    },
+    half:{
+      tubes:[{id:'FP-T12',name:'1/2" FastPipe Tubing',sku:'See site',price:0,icon:'tube',url:'https://compressor-source.com/collections/rapidair-fastpipe-system',ft:10}],
+      fittings:[{id:'FP-F12',name:'FastPipe 1/2" Fittings',sku:'See site',price:0,icon:'tee',url:'https://compressor-source.com/collections/rapidair-fastpipe-system',link:true}],
+      accessories:[{id:'FP-OUT12',name:'FastPipe Outlet',sku:'See site',price:0,icon:'outlet',url:'https://compressor-source.com/collections/rapidair-fastpipe-system',isOutlet:true}]
+    }
+  }
+};
+const COMP_PROD={id:'COMPRESSOR',name:'Air Compressor',sku:'Your Unit',price:0,icon:'compressor',url:'https://compressor-source.com/collections/air-compressors',special:true};
+
+// ── ICONS ─────────────────────────────────────────────────────────────────────
+function ico(type,sys,s=24){
+  const c=sys==='fastpipe'?'#2d1a6e':'#724BDE';
+  const m={
+    compressor:`<svg width="${s}" height="${s}" viewBox="0 0 28 28" fill="none"><rect x="3" y="8" width="15" height="12" rx="2.5" stroke="#2d1a6e" stroke-width="1.5"/><circle cx="22" cy="14" r="4" stroke="#2d1a6e" stroke-width="1.5"/><path d="M18 14h-3" stroke="#2d1a6e" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+    tube:`<svg width="${s}" height="${s}" viewBox="0 0 28 28" fill="none"><rect x="3" y="10" width="22" height="8" rx="4" stroke="${c}" stroke-width="1.5"/><rect x="6" y="13" width="16" height="2" rx="1" fill="${c}" opacity=".25"/></svg>`,
+    kit:`<svg width="${s}" height="${s}" viewBox="0 0 28 28" fill="none"><rect x="3" y="8" width="22" height="12" rx="3" stroke="${c}" stroke-width="1.5"/><path d="M10 8v12M18 8v12" stroke="${c}" stroke-width="1" opacity=".35"/></svg>`,
+    elbow:`<svg width="${s}" height="${s}" viewBox="0 0 28 28" fill="none"><path d="M6 14h8a4 4 0 0 1 4 4v4" stroke="${c}" stroke-width="2.5" stroke-linecap="round"/></svg>`,
+    tee:`<svg width="${s}" height="${s}" viewBox="0 0 28 28" fill="none"><path d="M4 14h20" stroke="${c}" stroke-width="2.5" stroke-linecap="round"/><path d="M14 14v8" stroke="${c}" stroke-width="2.5" stroke-linecap="round"/></svg>`,
+    adapter:`<svg width="${s}" height="${s}" viewBox="0 0 28 28" fill="none"><rect x="3" y="11" width="8" height="6" rx="2" stroke="${c}" stroke-width="1.5"/><rect x="17" y="9" width="8" height="10" rx="2" stroke="${c}" stroke-width="1.5"/><path d="M11 14h6" stroke="${c}" stroke-width="1.5"/></svg>`,
+    union:`<svg width="${s}" height="${s}" viewBox="0 0 28 28" fill="none"><path d="M3 14h22" stroke="${c}" stroke-width="2.5" stroke-linecap="round"/><rect x="11" y="11" width="6" height="6" rx="1" fill="${c}" opacity=".2" stroke="${c}" stroke-width="1"/></svg>`,
+    valve:`<svg width="${s}" height="${s}" viewBox="0 0 28 28" fill="none"><path d="M3 14h7M18 14h7" stroke="${c}" stroke-width="2.5" stroke-linecap="round"/><rect x="9" y="10" width="10" height="8" rx="2" stroke="${c}" stroke-width="1.5"/><path d="M14 8v3" stroke="${c}" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+    cap:`<svg width="${s}" height="${s}" viewBox="0 0 28 28" fill="none"><path d="M5 14h14" stroke="${c}" stroke-width="2.5" stroke-linecap="round"/><rect x="17" y="10" width="6" height="8" rx="2" stroke="${c}" stroke-width="1.5" fill="${c}" opacity=".15"/></svg>`,
+    outlet:`<svg width="${s}" height="${s}" viewBox="0 0 28 28" fill="none"><rect x="9" y="5" width="10" height="18" rx="3" stroke="${c}" stroke-width="1.5"/><circle cx="14" cy="14" r="2.5" fill="${c}" opacity=".4"/><path d="M3 14h6M19 14h6" stroke="${c}" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+    clip:`<svg width="${s}" height="${s}" viewBox="0 0 28 28" fill="none"><rect x="4" y="4" width="20" height="5" rx="2" stroke="${c}" stroke-width="1.5"/><path d="M14 9v15" stroke="${c}" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+    hose:`<svg width="${s}" height="${s}" viewBox="0 0 28 28" fill="none"><path d="M4 14c0-5 4-8 8-4s8-4 8-4" stroke="${c}" stroke-width="2" stroke-linecap="round" fill="none"/></svg>`,
+    coupler:`<svg width="${s}" height="${s}" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="6" stroke="${c}" stroke-width="1.5"/><circle cx="14" cy="14" r="2.5" fill="${c}" opacity=".3"/><path d="M3 14h2M23 14h2" stroke="${c}" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+    link:`<svg width="${s}" height="${s}" viewBox="0 0 28 28" fill="none"><path d="M9 14h10M15 11l4 3-4 3" stroke="${c}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  };
+  return m[type]||m.tube;
+}
+
+function layoutSVG(type){
+  const p='#724BDE',w='#ccc',co='#2d1a6e';
+  const s={
+    single:`<svg viewBox="0 0 120 70" fill="none"><rect x="8" y="8" width="104" height="54" rx="2" stroke="${w}" stroke-width="1.5" stroke-dasharray="4 2"/><line x1="16" y1="22" x2="104" y2="22" stroke="${p}" stroke-width="2.5" stroke-linecap="round"/><circle cx="16" cy="22" r="4" fill="${co}"/><line x1="40" y1="22" x2="40" y2="48" stroke="${p}" stroke-width="1.5" stroke-dasharray="3 2"/><line x1="70" y1="22" x2="70" y2="48" stroke="${p}" stroke-width="1.5" stroke-dasharray="3 2"/><line x1="100" y1="22" x2="100" y2="48" stroke="${p}" stroke-width="1.5" stroke-dasharray="3 2"/><rect x="34" y="48" width="12" height="7" rx="2" fill="${p}" opacity=".2"/><rect x="64" y="48" width="12" height="7" rx="2" fill="${p}" opacity=".2"/><rect x="94" y="48" width="12" height="7" rx="2" fill="${p}" opacity=".2"/></svg>`,
+    lshape:`<svg viewBox="0 0 120 70" fill="none"><rect x="8" y="8" width="104" height="54" rx="2" stroke="${w}" stroke-width="1.5" stroke-dasharray="4 2"/><line x1="16" y1="22" x2="104" y2="22" stroke="${p}" stroke-width="2.5" stroke-linecap="round"/><line x1="104" y1="22" x2="104" y2="54" stroke="${p}" stroke-width="2.5" stroke-linecap="round"/><circle cx="16" cy="22" r="4" fill="${co}"/><line x1="50" y1="22" x2="50" y2="42" stroke="${p}" stroke-width="1.5" stroke-dasharray="3 2"/><line x1="80" y1="22" x2="80" y2="42" stroke="${p}" stroke-width="1.5" stroke-dasharray="3 2"/><line x1="104" y1="40" x2="82" y2="40" stroke="${p}" stroke-width="1.5" stroke-dasharray="3 2"/><rect x="44" y="42" width="12" height="6" rx="2" fill="${p}" opacity=".2"/><rect x="74" y="42" width="12" height="6" rx="2" fill="${p}" opacity=".2"/><rect x="70" y="37" width="12" height="6" rx="2" fill="${p}" opacity=".2"/></svg>`,
+    loop:`<svg viewBox="0 0 120 70" fill="none"><rect x="8" y="8" width="104" height="54" rx="2" stroke="${w}" stroke-width="1.5" stroke-dasharray="4 2"/><rect x="16" y="16" width="88" height="38" rx="2" stroke="${p}" stroke-width="2.5" fill="none"/><circle cx="16" cy="20" r="4" fill="${co}"/><line x1="40" y1="16" x2="40" y2="34" stroke="${p}" stroke-width="1.5" stroke-dasharray="3 2"/><line x1="70" y1="16" x2="70" y2="34" stroke="${p}" stroke-width="1.5" stroke-dasharray="3 2"/><line x1="100" y1="30" x2="82" y2="30" stroke="${p}" stroke-width="1.5" stroke-dasharray="3 2"/><line x1="16" y1="38" x2="34" y2="38" stroke="${p}" stroke-width="1.5" stroke-dasharray="3 2"/><rect x="34" y="34" width="12" height="6" rx="2" fill="${p}" opacity=".2"/><rect x="64" y="34" width="12" height="6" rx="2" fill="${p}" opacity=".2"/><rect x="70" y="27" width="12" height="6" rx="2" fill="${p}" opacity=".2"/><rect x="20" y="38" width="12" height="6" rx="2" fill="${p}" opacity=".2"/></svg>`,
+    ushape:`<svg viewBox="0 0 120 70" fill="none"><rect x="8" y="8" width="104" height="54" rx="2" stroke="${w}" stroke-width="1.5" stroke-dasharray="4 2"/><line x1="16" y1="20" x2="104" y2="20" stroke="${p}" stroke-width="2.5" stroke-linecap="round"/><line x1="16" y1="20" x2="16" y2="54" stroke="${p}" stroke-width="2.5" stroke-linecap="round"/><line x1="104" y1="20" x2="104" y2="54" stroke="${p}" stroke-width="2.5" stroke-linecap="round"/><circle cx="16" cy="20" r="4" fill="${co}"/><line x1="50" y1="20" x2="50" y2="40" stroke="${p}" stroke-width="1.5" stroke-dasharray="3 2"/><line x1="80" y1="20" x2="80" y2="40" stroke="${p}" stroke-width="1.5" stroke-dasharray="3 2"/><line x1="16" y1="40" x2="34" y2="40" stroke="${p}" stroke-width="1.5" stroke-dasharray="3 2"/><line x1="104" y1="40" x2="86" y2="40" stroke="${p}" stroke-width="1.5" stroke-dasharray="3 2"/><rect x="44" y="40" width="12" height="6" rx="2" fill="${p}" opacity=".2"/><rect x="74" y="40" width="12" height="6" rx="2" fill="${p}" opacity=".2"/><rect x="20" y="40" width="12" height="6" rx="2" fill="${p}" opacity=".2"/><rect x="90" y="40" width="12" height="6" rx="2" fill="${p}" opacity=".2"/></svg>`
+  };
+  return s[type]||s.single;
+}
+
+// ── WIZARD ────────────────────────────────────────────────────────────────────
+// Step 2 renders its own persistent rec-box that updates in-place via updateRecBox()
+// so the inputs NEVER get replaced mid-keystroke.
+function updateRecBox(){
+  const hp=parseFloat(document.getElementById('inp-hp')?.value)||null;
+  const dist=parseFloat(document.getElementById('inp-dist')?.value)||null;
+  C.compHP=hp; C.maxDist=dist;
+  const rec=calcPipeSize(hp,dist);
+  // Only update diameter if user hasn't manually overridden
+  if(!C.diamOverride) C.diameter=rec;
+  const box=document.getElementById('rec-result');
+  const btn=document.getElementById('btn-next');
+  if(!box) return;
+  const chosen=C.diameter||rec;
+  if(!rec){
+    box.className='rec-box empty';
+    box.innerHTML=`<div class="rec-title">Enter both values above to get your recommendation</div><div class="rec-desc">We calculate this automatically so you don't have to guess.</div>`;
+    if(btn) btn.disabled=true;
+    return;
+  }
+  if(btn) btn.disabled=false;
+  box.className='rec-box good';
+  box.innerHTML=`<div class="rec-title">Recommended pipe size: ${diamLabel(rec)}</div>
+    <div class="rec-desc">${rec==='threequarter'
+      ?`With ${hp} HP over ${dist} ft, 3/4" tubing is recommended to maintain pressure at your farthest outlet.`
+      :`1/2" tubing is sufficient for your compressor and run length — a cost-effective choice for this installation.`
+    }</div>
+    <div class="rec-override">Override recommendation:
+      <select onchange="C.diameter=this.value;C.diamOverride=true;" style="padding:5px 8px;border:1px solid var(--gray-border);border-radius:3px;font-size:12px;background:var(--white);font-family:inherit">
+        <option value="threequarter" ${chosen==='threequarter'?'selected':''}>3/4"</option>
+        <option value="half" ${chosen==='half'?'selected':''}>1/2"</option>
+      </select>
+      ${C.diamOverride&&C.diameter!==rec?`<span style="font-size:11px;color:var(--amber)">&#9888; Overriding recommendation</span>`:''}
+    </div>`;
+}
+
+const STEPS=[
+  // Step 1 — System
+  {label:'Step 1 of 6',title:'What pipe system do you want to use?',sub:'Choose the type of RapidAir piping for your shop.',
+   render(){return`<div class="choice-grid">
+     <button class="choice-btn ${C.system==='maxline'&&!C.combination?'sel':''}" onclick="pickSys('maxline',false)">
+       <div class="cb-ico">${ico('tube','maxline',20)}<span style="font-size:11px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.04em">MaxLine</span><div class="sel-check"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2 2 4-4" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+       <div class="cb-title">MaxLine (Flexible)</div><div class="cb-desc">Semi-rigid tubing. Easiest to install. Flexes around obstacles. Best for most garages and shops.</div>
+     </button>
+     <button class="choice-btn ${C.system==='fastpipe'&&!C.combination?'sel':''}" onclick="pickSys('fastpipe',false)">
+       <div class="cb-ico">${ico('tube','fastpipe',20)}<span style="font-size:11px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.04em">FastPipe</span><div class="sel-check"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2 2 4-4" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+       <div class="cb-title">FastPipe (Rigid)</div><div class="cb-desc">Rigid aluminum pipe. Cleaner, more permanent look. Ideal for professional or commercial installs.</div>
+     </button>
+     <button class="choice-btn ${C.combination?'sel':''}" onclick="pickSys('fastpipe',true)">
+       <div class="cb-ico">${ico('tube','fastpipe',18)}${ico('tube','maxline',18)}<span style="font-size:11px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.04em">Combination</span><div class="sel-check"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2 2 4-4" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+       <div class="cb-title">Combination</div><div class="cb-desc">FastPipe trunk along the ceiling, MaxLine flexible drops to each outlet. Best of both worlds.</div>
+     </button>
+   </div>`;},
+   valid(){return C.system!==null},
+   afterRender(){}},
+
+  // Step 2 — HP + distance → rec — KEY FIX: inputs are persistent, rec updates in-place
+  {label:'Step 2 of 6',title:'What size is your compressor?',sub:"Enter your compressor's horsepower and the distance to your farthest outlet. We'll recommend the right pipe diameter — finish typing both values.",
+   render(){return`
+     <div class="field-grid fg2">
+       <div class="field">
+         <label>Compressor HP</label>
+         <input type="number" id="inp-hp" min="1" max="100" placeholder="e.g. 5" value="${C.compHP||''}">
+         <div class="unit">Total horsepower</div>
+       </div>
+       <div class="field">
+         <label>Distance to farthest outlet</label>
+         <input type="number" id="inp-dist" min="1" max="500" placeholder="e.g. 80" value="${C.maxDist||''}">
+         <div class="unit">Feet — up wall + along ceiling + down to outlet</div>
+       </div>
+     </div>
+     <p class="field-hint" style="font-size:11px;color:var(--text-muted);margin-top:8px;font-style:italic;line-height:1.6">Tip: measure from the compressor, up the wall to the ceiling, along to the farthest drop location, then down to outlet height.</p>
+     <div id="rec-result" class="rec-box empty">
+       <div class="rec-title">Enter both values above to get your recommendation</div>
+       <div class="rec-desc">We calculate this automatically so you don't have to guess.</div>
+     </div>`;},
+   valid(){return C.diameter!==null},
+   // afterRender wires up the blur/change listeners WITHOUT re-rendering the wizard
+   afterRender(){
+     const hpEl=document.getElementById('inp-hp');
+     const distEl=document.getElementById('inp-dist');
+     if(!hpEl||!distEl) return;
+     // Run once in case values are already populated (back-nav)
+     if(C.compHP&&C.maxDist) updateRecBox();
+     // Use blur + change — fires only when user leaves the field, not on every keystroke
+     hpEl.addEventListener('blur',updateRecBox);
+     hpEl.addEventListener('change',updateRecBox);
+     distEl.addEventListener('blur',updateRecBox);
+     distEl.addEventListener('change',updateRecBox);
+     // Enter key in HP moves focus to dist; Enter in dist triggers calculation
+     hpEl.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();distEl.focus();}});
+     distEl.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();updateRecBox();}});
+   }},
+
+  // Step 3 — Room dimensions
+  {label:'Step 3 of 6',title:'Tell us about your space',sub:'Enter your building dimensions. We use these to draw your floor plan to scale and calculate how much tubing you need.',
+   render(){return`<div class="field-grid fg2">
+     <div class="field"><label>Building width</label><input type="number" value="${C.roomW||''}" min="5" max="400" placeholder="e.g. 30" oninput="C.roomW=parseFloat(this.value)||null;validateStep()"><div class="unit">Feet</div></div>
+     <div class="field"><label>Building depth</label><input type="number" value="${C.roomD||''}" min="5" max="400" placeholder="e.g. 40" oninput="C.roomD=parseFloat(this.value)||null;validateStep()"><div class="unit">Feet</div></div>
+     <div class="field"><label>Ceiling height</label><input type="number" value="${C.ceilH||10}" min="7" max="40" placeholder="e.g. 10" oninput="C.ceilH=parseFloat(this.value)||10"><div class="unit">Feet — where the trunk line runs</div></div>
+     <div class="field"><label>Outlet height from floor</label><input type="number" value="${C.outletH||4}" min="1" max="20" placeholder="e.g. 4" oninput="C.outletH=parseFloat(this.value)||4"><div class="unit">Feet — default is 4 ft</div></div>
+   </div>`;},
+   valid(){return C.roomW>0&&C.roomD>0},
+   afterRender(){}},
+
+  // Step 4 — Corner treatment
+  {label:'Step 4 of 6',title:'How do you want to handle corners?',sub:'This applies to MaxLine only — FastPipe always requires fittings at corners.',
+   render(){
+     if(C.system==='fastpipe'&&!C.combination) return`<div class="fastpipe-note">FastPipe is rigid aluminum — all corners require a fitting. Elbow fittings for your trunk line corners will be counted automatically in your parts list based on the layout you choose.</div>`;
+     return`<div class="choice-grid c2">
+       <button class="choice-btn ${C.useElbows?'sel':''}" onclick="C.useElbows=true;renderWizard()">
+         <div style="display:flex;justify-content:space-between;align-items:flex-start"><div class="cb-title">Elbow fittings at corners</div><div class="sel-check"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2 2 4-4" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+         <div class="cb-desc" style="margin-top:6px">A 90° elbow fitting at each turn. More secure, cleaner finish. Recommended for permanent installs.</div>
+       </button>
+       <button class="choice-btn ${!C.useElbows?'sel':''}" onclick="C.useElbows=false;renderWizard()">
+         <div style="display:flex;justify-content:space-between;align-items:flex-start"><div class="cb-title">Bend tubing around corners</div><div class="sel-check"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2 2 4-4" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+         <div class="cb-desc" style="margin-top:6px">MaxLine's flexibility lets you form gradual bends without fittings. Fewer parts, faster install.</div>
+       </button>
+     </div>
+     <p class="warn-note">${C.useElbows?'Elbow fittings for trunk line corners will be counted automatically based on your layout.':'No elbows will be included for trunk line corners. Drop tees are still counted for each outlet station.'}</p>`;},
+   valid(){return true},
+   afterRender(){}},
+
+  // Step 5 — Layout template
+  {label:'Step 5 of 6',title:'Choose a starting layout',sub:"Pick the shape closest to your shop. We'll pre-fill the canvas with the right components — you can adjust from there.",
+   render(){
+     const layouts=[
+       {id:'single',name:'Single Wall Run',desc:'One trunk line along one wall. Best for smaller shops or single-bay garages.'},
+       {id:'lshape',name:'L-Shape',desc:'Trunk turns one corner onto a second wall. Common for rectangular shops.'},
+       {id:'loop',name:'Main Line Loop',desc:'Full perimeter loop. Best pressure consistency at every outlet.'},
+       {id:'ushape',name:'U-Shape',desc:'Three-wall run. Great for larger shops with tools on multiple walls.'},
+     ];
+     return`<div class="layout-grid">${layouts.map(l=>`<button class="layout-btn ${C.layout===l.id?'sel':''}" onclick="C.layout='${l.id}';renderWizard()"><div class="layout-preview">${layoutSVG(l.id)}</div><div class="layout-name">${l.name}</div><div class="layout-desc">${l.desc}</div></button>`).join('')}</div>`;},
+   valid(){return C.layout!==null},
+   afterRender(){}},
+
+  // Step 6 — Summary
+  {label:'Step 6 of 6',title:'Ready to design your system',sub:'Review your settings below and launch the designer.',
+   render(){
+     const d=diamLabel(C.diameter||'threequarter');
+     const s=C.combination?'Combination':C.system==='fastpipe'?'FastPipe (Rigid)':'MaxLine (Flexible)';
+     const layouts={single:'Single Wall Run',lshape:'L-Shape',loop:'Main Line Loop',ushape:'U-Shape'};
+     const corners=(C.system==='fastpipe'&&!C.combination)?'Fittings required':(C.useElbows?'Elbow fittings':'Bend tubing');
+     return`<div class="summary-grid">
+       <div class="sum-chip"><div class="sum-label">System</div><div class="sum-val">${s}</div></div>
+       <div class="sum-chip"><div class="sum-label">Pipe Diameter</div><div class="sum-val">${d}</div></div>
+       <div class="sum-chip"><div class="sum-label">Building Size</div><div class="sum-val">${C.roomW} × ${C.roomD} ft</div></div>
+       <div class="sum-chip"><div class="sum-label">Ceiling / Outlet Ht.</div><div class="sum-val">${C.ceilH} ft / ${C.outletH} ft</div></div>
+       <div class="sum-chip"><div class="sum-label">Corner Treatment</div><div class="sum-val">${corners}</div></div>
+       <div class="sum-chip"><div class="sum-label">Starting Layout</div><div class="sum-val">${layouts[C.layout]||'—'}</div></div>
+     </div>
+     <div class="tip-box"><strong>In the designer:</strong><br>&#8594; Your canvas pre-fills based on your layout — drag components to adjust<br>&#8594; Use <strong>Draw Line</strong> to connect components with air lines<br>&#8594; Switch to <strong>Wall &amp; Drop View</strong> to see vertical drop legs<br>&#8594; Your complete parts list — including tubing — builds automatically</div>`;},
+   valid(){return true},
+   afterRender(){}}
+];
+
+let wizStep=0;
+function renderWizard(){
+  document.getElementById('step-dots').innerHTML=STEPS.map((s,i)=>`<div class="dot ${i<wizStep?'done':i===wizStep?'active':''}"></div>`).join('');
+  const step=STEPS[wizStep];
+  const isLast=wizStep===STEPS.length-1;
+  document.getElementById('wiz-body').innerHTML=`
+    <div class="step-label">${step.label}</div>
+    <div class="wiz-title">${step.title}</div>
+    <p class="wiz-sub">${step.sub}</p>
+    ${step.render()}
+    <div class="wiz-actions">
+      ${wizStep>0?`<button class="btn-back" onclick="wizBack()">&#8592; Back</button>`:'<span></span>'}
+      <button class="btn-next" id="btn-next" onclick="${isLast?'launchDesigner()':'wizNext()'}" ${step.valid()?'':'disabled'}>
+        ${isLast?'Launch Designer &#8594;':'Next &#8594;'}
+      </button>
+    </div>`;
+  // afterRender runs AFTER innerHTML is set, so DOM elements exist
+  step.afterRender();
+}
+
+function pickSys(sys,combo){
+  C.system=sys;C.combination=combo;
+  renderWizard();
+}
+function validateStep(){
+  const b=document.getElementById('btn-next');
+  if(b) b.disabled=!STEPS[wizStep].valid();
+}
+function wizNext(){if(!STEPS[wizStep].valid())return;wizStep++;renderWizard();}
+function wizBack(){wizStep--;renderWizard();}
+function restartWizard(){wizStep=0;document.getElementById('wizard').style.display='flex';document.getElementById('designer').classList.remove('active');renderWizard();}
+
+// ── DESIGNER ──────────────────────────────────────────────────────────────────
+const SCALE=8,PAD=40;
+let mode='select',placedItems=[],pipes=[],pipeStart=null,mouseX=0,mouseY=0,idc=0,currentView='floor';
+
+function launchDesigner(){
+  document.getElementById('wizard').style.display='none';
+  document.getElementById('designer').classList.add('active');
+  placedItems=[];pipes=[];document.querySelectorAll('.placed-item').forEach(e=>e.remove());
+  buildSidebar();drawRoom();buildShopLinks();
+  const sysLabel=C.combination?'Combo':C.system==='maxline'?'MaxLine':'FastPipe';
+  document.getElementById('sb-config').textContent=`${sysLabel} · ${diamLabel(C.diameter||'threequarter')} · ${C.roomW}×${C.roomD} ft · Ceiling ${C.ceilH}ft`;
+  document.getElementById('ceil-slider').value=C.outletH;
+  document.getElementById('ceil-val').textContent=C.outletH+' ft';
+  applyLayout(C.layout);renderPipes();updateBOM();
+}
+
+function drawRoom(){
+  const wPx=C.roomW*SCALE,dPx=C.roomD*SCALE;
+  const o=document.getElementById('room-outline');
+  o.style.cssText=`left:${PAD}px;top:${PAD}px;width:${wPx}px;height:${dPx}px`;
+  document.getElementById('rl-w').style.cssText=`left:${PAD+wPx/2-18}px;top:${PAD+dPx+5}px`;
+  document.getElementById('rl-w').textContent=`${C.roomW} ft`;
+  document.getElementById('rl-d').style.cssText=`left:${PAD+wPx+5}px;top:${PAD+dPx/2-8}px;writing-mode:vertical-rl`;
+  document.getElementById('rl-d').textContent=`${C.roomD} ft`;
+}
+
+function applyLayout(layout){
+  document.querySelectorAll('.placed-item').forEach(e=>e.remove());placedItems=[];pipes=[];
+  const W=C.roomW*SCALE,D=C.roomD*SCALE;
+  const mx=x=>PAD+Math.round(x*W/100/10)*10,my=y=>PAD+Math.round(y*D/100/10)*10;
+  const sys=C.system==='fastpipe'?'fastpipe':'maxline';
+  const cat=CAT[sys][C.diameter||'threequarter'];
+  const tee=cat.fittings.find(f=>f.icon==='tee')||cat.fittings[0];
+  const elbow=cat.fittings.find(f=>f.icon==='elbow')||tee;
+  const outlet=cat.accessories.find(f=>f.isOutlet)||cat.accessories[0];
+  const pl=(p,x,y)=>{const id=++idc;const item={id,product:p,x,y};placedItems.push(item);renderItem(item);return id;};
+  const cn=(a,as,b,bs)=>pipes.push({from:{itemId:a,side:as},to:{itemId:b,side:bs},system:C.system});
+  const c=pl(COMP_PROD,mx(5),my(20));
+  if(layout==='single'){
+    const t1=pl(tee,mx(40),my(20)),t2=pl(tee,mx(70),my(20));
+    const o1=pl(outlet,mx(40),my(58)),o2=pl(outlet,mx(70),my(58));
+    cn(c,'right',t1,'left');cn(t1,'right',t2,'left');cn(t1,'bottom',o1,'top');cn(t2,'bottom',o2,'top');
+  }else if(layout==='lshape'){
+    const t1=pl(tee,mx(50),my(20)),e1=pl(elbow,mx(88),my(20)),t2=pl(tee,mx(88),my(58));
+    const o1=pl(outlet,mx(50),my(58)),o2=pl(outlet,mx(68),my(58));
+    cn(c,'right',t1,'left');cn(t1,'right',e1,'left');cn(e1,'bottom',t2,'top');cn(t1,'bottom',o1,'top');cn(t2,'left',o2,'right');
+  }else if(layout==='loop'){
+    const t1=pl(tee,mx(50),my(12)),e1=pl(elbow,mx(88),my(12)),t2=pl(tee,mx(88),my(58)),e2=pl(elbow,mx(5),my(58));
+    const o1=pl(outlet,mx(50),my(35)),o2=pl(outlet,mx(70),my(35)),o3=pl(outlet,mx(25),my(58));
+    cn(c,'right',t1,'left');cn(t1,'right',e1,'left');cn(e1,'bottom',t2,'top');cn(t2,'left',o2,'right');cn(t2,'bottom',e2,'top');cn(e2,'right',o3,'left');cn(e2,'top',c,'bottom');cn(t1,'bottom',o1,'top');
+  }else if(layout==='ushape'){
+    const t1=pl(tee,mx(50),my(12)),e1=pl(elbow,mx(88),my(12)),e2=pl(elbow,mx(5),my(12));
+    const t2=pl(tee,mx(88),my(58)),t3=pl(tee,mx(5),my(58));
+    const o1=pl(outlet,mx(50),my(45)),o2=pl(outlet,mx(70),my(35)),o3=pl(outlet,mx(20),my(35));
+    cn(c,'right',t1,'left');cn(t1,'right',e1,'left');cn(t1,'left',e2,'right');cn(e1,'bottom',t2,'top');cn(e2,'bottom',t3,'top');cn(t1,'bottom',o1,'top');cn(t2,'left',o2,'right');cn(t3,'right',o3,'left');
+  }
+  renderPipes();updateBOM();
+}
+
+function buildSidebar(){
+  const sys=C.system==='fastpipe'?'fastpipe':'maxline';
+  const cat=CAT[sys][C.diameter||'threequarter'];
+  const scroll=document.getElementById('sb-scroll');scroll.innerHTML='';
+  function sec(title,items){
+    const t=document.createElement('div');t.className='sb-sec';t.textContent=title;scroll.appendChild(t);
+    items.forEach(p=>{
+      if(p.link){const a=document.createElement('a');a.href=p.url;a.target='_blank';a.className='tool-item';a.style.textDecoration='none';a.innerHTML=`<div style="width:22px;height:22px;display:flex;align-items:center;justify-content:center;filter:brightness(0) invert(1) opacity(.7)">${ico(p.icon,sys,20)}</div><div><div class="tool-name">${p.name}</div></div>`;scroll.appendChild(a);return;}
+      const el=document.createElement('div');el.className='tool-item';el.draggable=true;
+      el.innerHTML=`<div style="width:22px;height:22px;display:flex;align-items:center;justify-content:center;filter:brightness(0) invert(1) opacity(.8)">${ico(p.icon,sys,20)}</div><div><div class="tool-name">${p.name}</div><div class="tool-price">${p.price>0?'$'+p.price.toFixed(2):'See site'}</div></div>`;
+      el.addEventListener('dragstart',ev=>{ev.dataTransfer.setData('pid',p.id);ev.dataTransfer.effectAllowed='copy';});
+      scroll.appendChild(el);
+    });
+  }
+  const cs=document.createElement('div');cs.className='sb-sec';cs.textContent='Start Here';scroll.appendChild(cs);
+  const cel=document.createElement('div');cel.className='tool-item';cel.draggable=true;
+  cel.innerHTML=`<div style="width:22px;height:22px;display:flex;align-items:center;justify-content:center;filter:brightness(0) invert(1) opacity(.8)">${ico('compressor','maxline',20)}</div><div><div class="tool-name">Air Compressor</div><div class="tool-price">Place your unit first</div></div>`;
+  cel.addEventListener('dragstart',ev=>{ev.dataTransfer.setData('pid','COMPRESSOR');ev.dataTransfer.effectAllowed='copy';});
+  scroll.appendChild(cel);
+  sec('Tubing',cat.tubes);sec('Fittings',cat.fittings);sec('Outlets & Drops',cat.accessories);
+}
+
+function buildShopLinks(){
+  document.getElementById('shop-links').innerHTML=`
+    <a class="shop-link" href="${C.system==='fastpipe'?'https://compressor-source.com/collections/rapidair-fastpipe-system':'https://compressor-source.com/collections/maxline'}" target="_blank">Shop All ${C.system==='fastpipe'?'FastPipe':'MaxLine'} →</a>
+    <a class="shop-link" href="https://compressor-source.com/collections/rapidair" target="_blank">All RapidAir Products →</a>`;
+}
+
+function switchView(v){
+  currentView=v;
+  document.getElementById('tab-floor').classList.toggle('active',v==='floor');
+  document.getElementById('tab-wall').classList.toggle('active',v==='wall');
+  document.getElementById('floor-wrap').style.display=v==='floor'?'':'none';
+  document.getElementById('wall-wrap').classList.toggle('show',v==='wall');
+  document.getElementById('ceil-ctrl').classList.toggle('show',v==='wall');
+  if(v==='wall') renderWallView();
+}
+function updateOutletHeight(val){C.outletH=parseFloat(val);document.getElementById('ceil-val').textContent=parseFloat(val)+' ft';renderWallView();updateBOM();}
+
+// drag & drop
+const floorWrap=document.getElementById('floor-wrap');
+floorWrap.addEventListener('dragover',e=>{e.preventDefault();e.dataTransfer.dropEffect='copy';});
+floorWrap.addEventListener('drop',e=>{
+  e.preventDefault();const pid=e.dataTransfer.getData('pid');
+  const cr=document.getElementById('canvas').getBoundingClientRect();
+  let x=Math.round((e.clientX-cr.left-35)/10)*10,y=Math.round((e.clientY-cr.top-30)/10)*10;
+  x=Math.max(0,x);y=Math.max(0,y);
+  let product=pid==='COMPRESSOR'?COMP_PROD:null;
+  if(!product){const sys=C.system==='fastpipe'?'fastpipe':'maxline';const cat=CAT[sys][C.diameter||'threequarter'];for(const arr of[cat.tubes,cat.fittings,cat.accessories]){const f=arr.find(p=>p.id===pid);if(f){product=f;break;}}}
+  if(product){const id=++idc;const item={id,product,x,y};placedItems.push(item);renderItem(item);updateBOM();if(currentView==='wall')renderWallView();}
+});
+
+function renderItem(item){
+  const el=document.createElement('div');
+  const isComp=item.product.id==='COMPRESSOR',isOut=item.product.isOutlet;
+  el.className='placed-item'+(isComp?' compressor-item':isOut?' outlet-item':'');
+  el.id='item-'+item.id;el.style.left=item.x+'px';el.style.top=item.y+'px';
+  const sn=item.product.name.length>17?item.product.name.slice(0,15)+'…':item.product.name;
+  el.innerHTML=`<button class="del-btn" onclick="removeItem(${item.id})">✕</button>
+    <div class="item-box">
+      <div style="width:22px;height:22px;display:flex;align-items:center;justify-content:center">${ico(item.product.icon,C.system,20)}</div>
+      <div class="item-label">${sn}</div>
+      <div class="item-sku">${item.product.sku}</div>
+    </div>
+    ${isOut?`<div class="outlet-flag">&#8595; drop</div>`:''}
+    <div class="pipe-port pt" data-item="${item.id}" data-side="top"></div>
+    <div class="pipe-port pb" data-item="${item.id}" data-side="bottom"></div>
+    <div class="pipe-port pl" data-item="${item.id}" data-side="left"></div>
+    <div class="pipe-port pr" data-item="${item.id}" data-side="right"></div>`;
+  let dox=0,doy=0;
+  el.addEventListener('mousedown',e=>{
+    if(e.target.classList.contains('pipe-port')||e.target.classList.contains('del-btn'))return;
+    if(mode==='pipe')return;
+    const cr=document.getElementById('canvas').getBoundingClientRect();dox=e.clientX-cr.left-item.x;doy=e.clientY-cr.top-item.y;
+    const mv=ev=>{const r=document.getElementById('canvas').getBoundingClientRect();item.x=Math.max(0,Math.round((ev.clientX-r.left-dox)/10)*10);item.y=Math.max(0,Math.round((ev.clientY-r.top-doy)/10)*10);el.style.left=item.x+'px';el.style.top=item.y+'px';renderPipes();};
+    const up=()=>{document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);updateBOM();};
+    document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);
+  });
+  el.querySelectorAll('.pipe-port').forEach(port=>{
+    port.addEventListener('mousedown',e=>{
+      e.stopPropagation();if(mode!=='pipe')setMode('pipe',document.getElementById('btn-pipe'));
+      const cr=document.getElementById('canvas').getBoundingClientRect();const pr=port.getBoundingClientRect();
+      pipeStart={itemId:item.id,side:port.dataset.side,x:pr.left+pr.width/2-cr.left,y:pr.top+pr.height/2-cr.top};
+    });
+  });
+  document.getElementById('canvas').appendChild(el);
+}
+
+function getPortPos(itemId,side){
+  const item=placedItems.find(i=>i.id===itemId);if(!item)return{x:0,y:0};
+  const el=document.getElementById('item-'+itemId);if(!el)return{x:0,y:0};
+  const box=el.querySelector('.item-box');const bw=box?box.offsetWidth:70,bh=box?box.offsetHeight:62;
+  return{top:{x:item.x+bw/2,y:item.y},bottom:{x:item.x+bw/2,y:item.y+bh},left:{x:item.x,y:item.y+bh/2},right:{x:item.x+bw,y:item.y+bh/2}}[side]||{x:item.x+bw/2,y:item.y+bh/2};
+}
+
+function renderPipes(){
+  const svg=document.getElementById('pipe-layer');svg.innerHTML='';
+  pipes.forEach((p,idx)=>{
+    const a=getPortPos(p.from.itemId,p.from.side),b=getPortPos(p.to.itemId,p.to.side);
+    const dx=Math.abs(b.x-a.x)*0.5;
+    const d=`M${a.x},${a.y} C${a.x+dx},${a.y} ${b.x-dx},${b.y} ${b.x},${b.y}`;
+    const path=document.createElementNS('http://www.w3.org/2000/svg','path');path.setAttribute('d',d);path.setAttribute('class','pipe '+(p.system||C.system));svg.appendChild(path);
+    const hit=document.createElementNS('http://www.w3.org/2000/svg','path');hit.setAttribute('d',d);hit.setAttribute('stroke','transparent');hit.setAttribute('stroke-width','16');hit.setAttribute('fill','none');hit.style.pointerEvents='stroke';hit.style.cursor='pointer';hit.addEventListener('click',()=>{pipes.splice(idx,1);renderPipes();updateBOM();});svg.appendChild(hit);
+  });
+  if(pipeStart){const prev=document.createElementNS('http://www.w3.org/2000/svg','path');prev.setAttribute('d',`M${pipeStart.x},${pipeStart.y} L${mouseX},${mouseY}`);prev.setAttribute('class','pipe-preview');svg.appendChild(prev);}
+}
+document.getElementById('canvas').addEventListener('mousemove',e=>{const r=document.getElementById('canvas').getBoundingClientRect();mouseX=e.clientX-r.left;mouseY=e.clientY-r.top;if(pipeStart)renderPipes();});
+document.getElementById('canvas').addEventListener('mouseup',e=>{
+  if(!pipeStart)return;
+  if(e.target.classList.contains('pipe-port')){const toId=parseInt(e.target.dataset.item),toSide=e.target.dataset.side;if(toId!==pipeStart.itemId){pipes.push({from:{itemId:pipeStart.itemId,side:pipeStart.side},to:{itemId:toId,side:toSide},system:C.system});renderPipes();updateBOM();}}
+  pipeStart=null;renderPipes();
+});
+
+function removeItem(id){placedItems=placedItems.filter(i=>i.id!==id);pipes=pipes.filter(p=>p.from.itemId!==id&&p.to.itemId!==id);document.getElementById('item-'+id)?.remove();renderPipes();updateBOM();if(currentView==='wall')renderWallView();}
+function clearCanvas(){placedItems=[];pipes=[];document.querySelectorAll('.placed-item').forEach(e=>e.remove());renderPipes();updateBOM();if(currentView==='wall')renderWallView();}
+function setMode(m,btn){
+  mode=m;
+  document.querySelectorAll('.tb-btn:not(.tb-danger)').forEach(b=>b.classList.remove('active'));
+  if(!btn.classList.contains('tb-danger')) btn.classList.add('active');
+  document.getElementById('canvas').style.cursor=m==='pipe'?'crosshair':'default';
+  document.getElementById('canvas').classList.toggle('pipe-mode',m==='pipe');
+}
+
+function renderWallView(){
+  const svg=document.getElementById('wall-svg');svg.innerHTML='';
+  const lbl=document.getElementById('wall-labels');lbl.innerHTML='';
+  const wc=document.getElementById('wall-wrap');const W=wc.offsetWidth||600,H=wc.offsetHeight||400;
+  const FLOOR_Y=H-50,CEIL_Y=50;
+  const dropPx=(C.outletH/C.ceilH)*(H-100);const outletY=FLOOR_Y-dropPx;
+  const outlets=placedItems.filter(i=>i.product.isOutlet);
+  const hasComp=placedItems.some(i=>i.product.id==='COMPRESSOR');
+  const pc='#724BDE';
+  const ln=(x1,y1,x2,y2,stroke,sw,da)=>{const l=document.createElementNS('http://www.w3.org/2000/svg','line');l.setAttribute('x1',x1);l.setAttribute('y1',y1);l.setAttribute('x2',x2);l.setAttribute('y2',y2);l.setAttribute('stroke',stroke);l.setAttribute('stroke-width',sw);if(da)l.setAttribute('stroke-dasharray',da);svg.appendChild(l);};
+  ln(20,FLOOR_Y,W-20,FLOOR_Y,'#ccc',2);
+  ln(20,CEIL_Y,W-20,CEIL_Y,'#ccc',1.5,'6 4');
+  const wl=(text,x,y,color='#aaa',fw='500')=>{const d=document.createElement('div');d.style.cssText=`position:absolute;left:${x}px;top:${y}px;font-size:10px;color:${color};font-weight:${fw};pointer-events:none;white-space:nowrap;font-family:Inter,system-ui`;d.textContent=text;lbl.appendChild(d);};
+  wl('Ceiling / trunk line',24,CEIL_Y-16,'#aaa','600');wl('Floor',24,FLOOR_Y+5,'#aaa');
+  if(outlets.length===0){wl('Add outlet stations on the floor plan to see drop legs here',Math.max(20,W/2-180),H/2-8,'#bbb');return;}
+  const spacing=Math.min(110,(W-80)/Math.max(outlets.length,1));const startX=hasComp?70:40;
+  if(hasComp){ln(30,FLOOR_Y,30,CEIL_Y,'#2d1a6e',2.5,'5 3');wl('Compressor',8,FLOOR_Y-22,'#2d1a6e','700');}
+  ln(hasComp?30:startX,CEIL_Y,startX+(outlets.length-1)*spacing+20,CEIL_Y,pc,4);
+  outlets.forEach((item,idx)=>{
+    const x=startX+idx*spacing;
+    ln(x,CEIL_Y,x,outletY,pc,2.5,'6 4');
+    const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');rect.setAttribute('x',x-16);rect.setAttribute('y',outletY);rect.setAttribute('width',32);rect.setAttribute('height',20);rect.setAttribute('rx',3);rect.setAttribute('fill','white');rect.setAttribute('stroke',pc);rect.setAttribute('stroke-width',1.5);svg.appendChild(rect);
+    const txt=document.createElementNS('http://www.w3.org/2000/svg','text');txt.setAttribute('x',x);txt.setAttribute('y',outletY+13);txt.setAttribute('text-anchor','middle');txt.setAttribute('font-size','9');txt.setAttribute('font-weight','600');txt.setAttribute('fill',pc);txt.setAttribute('font-family','Inter,system-ui');txt.textContent='Outlet';svg.appendChild(txt);
+    wl(`${C.outletH} ft`,x+9,(CEIL_Y+outletY)/2-7,pc,'600');
+  });
+  const leg=document.createElement('div');leg.style.cssText='position:absolute;bottom:10px;right:14px;font-size:10px;color:#aaa;text-align:right;pointer-events:none;font-family:Inter,system-ui;font-weight:500';
+  leg.innerHTML=`<span style="display:inline-block;width:16px;height:3px;background:${pc};border-radius:2px;vertical-align:middle;margin-right:4px"></span>Trunk &nbsp;<span style="display:inline-block;width:16px;border-top:2px dashed ${pc};vertical-align:middle;margin-right:4px"></span>Drop legs (${C.outletH} ft from floor)`;
+  lbl.appendChild(leg);
+}
+
+function pipeLengthFt(pipe){
+  const a=getPortPos(pipe.from.itemId,pipe.from.side),b=getPortPos(pipe.to.itemId,pipe.to.side);
+  return Math.round(Math.sqrt((b.x-a.x)**2+(b.y-a.y)**2)/SCALE*10)/10;
+}
+
+function updateBOM(){
+  const bomList=document.getElementById('bom-list');
+  const outlets=placedItems.filter(i=>i.product.isOutlet);
+  const nonSpec=placedItems.filter(i=>i.product.id!=='COMPRESSOR'&&!i.product.link);
+  if(nonSpec.length===0){bomList.innerHTML='<p class="bom-empty">Drag components onto the canvas<br>to build your parts list</p>';return;}
+  let horizFt=0;pipes.forEach(p=>horizFt+=pipeLengthFt(p));horizFt=Math.ceil(horizFt);
+  const dropFt=Math.max(0,C.ceilH-C.outletH);
+  const vertFt=Math.ceil(outlets.length*dropFt);
+  const riserFt=placedItems.some(i=>i.product.id==='COMPRESSOR')?Math.ceil(C.ceilH):0;
+  const totalFt=horizFt+vertFt+riserFt;
+  const totalFtBuf=Math.ceil(totalFt*1.1);
+  const sys=C.system==='fastpipe'?'fastpipe':'maxline';
+  const tubingProducts=CAT[sys][C.diameter||'threequarter'].tubes;
+  const rollProd=tubingProducts.find(p=>p.ft===50)||tubingProducts.find(p=>p.ft===100)||tubingProducts[0];
+  const rollsNeeded=rollProd&&rollProd.ft?Math.ceil(totalFtBuf/rollProd.ft):null;
+  const counts={};
+  nonSpec.forEach(item=>{
+    if(item.product.icon==='tube'||item.product.icon==='kit')return;
+    const id=item.product.id;if(!counts[id])counts[id]={product:item.product,qty:0};counts[id].qty++;
+  });
+  let total=0,tubingHtml='',fittingsHtml='';
+  if(totalFt>0&&rollProd){
+    if(rollsNeeded&&rollProd.price>0){
+      const lt=rollProd.price*rollsNeeded;total+=lt;
+      tubingHtml=`<div class="bom-item tubing-row">
+        <div class="bom-qty">${rollsNeeded}×</div>
+        <div class="bom-name">
+          <a href="${rollProd.url}" target="_blank">${rollProd.name}</a>
+          <br><span style="font-size:9px;color:#888;font-weight:500">${rollProd.sku} · ${totalFtBuf} ft needed (incl. 10% buffer)</span>
+          <br><span style="font-size:9px;color:#888">
+            <span class="badge h">H</span> ${horizFt} ft trunk
+            ${vertFt>0?`&nbsp;<span class="badge v">V</span> ${vertFt} ft drops`:''}
+            ${riserFt>0?`&nbsp;<span class="badge v">V</span> ${riserFt} ft riser`:''}
+          </span>
+        </div>
+        <div class="bom-price">$${lt.toFixed(2)}</div>
+      </div>`;
+    }else if(rollProd.price===0){
+      tubingHtml=`<div class="bom-item tubing-row">
+        <div class="bom-qty">~${totalFtBuf} ft</div>
+        <div class="bom-name"><a href="${rollProd.url}" target="_blank">${rollProd.name}</a><br><span style="font-size:9px;color:#888;font-weight:500">See site for pack sizes and pricing</span></div>
+        <div class="bom-price">—</div>
+      </div>`;
+    }
+  }
+  Object.values(counts).forEach(({product,qty})=>{
+    if(!product.price||product.link)return;
+    const lt=product.price*qty;total+=lt;
+    fittingsHtml+=`<div class="bom-item">
+      <div class="bom-qty">${qty}×</div>
+      <div class="bom-name"><a href="${product.url}" target="_blank">${product.name}</a><br><span style="font-size:9px;color:#888;font-weight:500">${product.sku}</span></div>
+      <div class="bom-price">$${lt.toFixed(2)}</div>
+    </div>`;
+  });
+  let html='';
+  if(tubingHtml) html+=`<div class="bom-section-label">Tubing</div>${tubingHtml}`;
+  if(fittingsHtml) html+=`<div class="bom-section-label">Fittings &amp; Accessories</div>${fittingsHtml}`;
+  if(total>0) html+=`<div class="bom-total"><span class="bom-total-label">Estimated Total</span><span class="bom-total-val">$${total.toFixed(2)}</span></div>`;
+  if(!html) html='<p class="bom-empty">Add priced components to see totals</p>';
+  bomList.innerHTML=html;
+}
+
+function sendToBOM(){
+  const d=diamLabel(C.diameter||'threequarter');
+  const sys=C.combination?'Combination (FastPipe trunk + MaxLine drops)':C.system==='fastpipe'?'FastPipe (Rigid)':'MaxLine (Flexible)';
+  const outlets=placedItems.filter(i=>i.product.isOutlet).length;
+  let horizFt=0;pipes.forEach(p=>horizFt+=pipeLengthFt(p));horizFt=Math.ceil(horizFt);
+  const dropFt=Math.max(0,C.ceilH-C.outletH);
+  const vertFt=Math.ceil(outlets*dropFt);
+  const riserFt=placedItems.some(i=>i.product.id==='COMPRESSOR')?Math.ceil(C.ceilH):0;
+  const totalFt=Math.ceil((horizFt+vertFt+riserFt)*1.1);
+  const counts={};
+  placedItems.filter(i=>i.product.id!=='COMPRESSOR'&&i.product.icon!=='tube'&&i.product.icon!=='kit').forEach(item=>{const id=item.product.id;if(!counts[id])counts[id]={product:item.product,qty:0};counts[id].qty++;});
+  const list=Object.values(counts).map(({product,qty})=>`• ${qty}× ${product.name} (${product.sku})`).join('\n')||'(none placed yet)';
+  const layouts={single:'Single Wall Run',lshape:'L-Shape',loop:'Main Line Loop',ushape:'U-Shape'};
+  sendPrompt(`I've planned a RapidAir air line layout using the Compressor Source designer.\n\nSystem: ${sys}\nPipe diameter: ${d}\nCompressor: ${C.compHP||'?'} HP · Farthest outlet: ${C.maxDist||'?'} ft\nBuilding: ${C.roomW}×${C.roomD} ft · Ceiling: ${C.ceilH} ft · Outlet height: ${C.outletH} ft\nLayout: ${layouts[C.layout]||'Custom'}\nCorners: ${C.useElbows?'Elbow fittings':'Bend tubing'}\nOutlet stations: ${outlets}\n\nTubing needed: ~${totalFt} ft total (${horizFt} ft horizontal + ${vertFt} ft drops + ${riserFt} ft riser, incl. 10% buffer)\n\nFittings & accessories:\n${list}\n\nCan you review this and let me know if anything is missing?`);
+}
+
+renderWizard();
+</script>
+</body>
+</html>
